@@ -73,6 +73,10 @@ function! vader#run(bang, ...)
     call vader#window#append('Elapsed time: '.
           \ substitute(reltimestr(reltime(st)), '^\s*', '', '') .' sec.', 0)
     call vader#window#cleanup()
+
+    let g:vader_report = join(getline(1, '$'), "\n")
+    let g:vader_errors = qfl
+
     if a:bang
       if empty(qfl)
         qall
@@ -100,7 +104,8 @@ function s:split_args(arg)
 endfunction
 
 function vader#log(msg)
-  call vader#window#append('> '.a:msg, s:indent)
+  let msg = type(a:msg) == 1 ? a:msg : string(a:msg)
+  call vader#window#append('> ' . msg, s:indent)
   call vader#window#workbench()
 endfunction
 
@@ -122,12 +127,13 @@ function vader#restore(args)
 endfunction
 
 function! s:prepare()
-  command! -nargs=+ Log          :call vader#log(<args>)
-  command! -nargs=+ Save         :call vader#save(<q-args>)
-  command! -nargs=* Restore      :call vader#restore(<q-args>)
-  command! -nargs=+ Assert       :call vader#assert#true(<args>)
-  command! -nargs=+ AssertEqual  :call vader#assert#equal(<args>)
-  command! -nargs=+ AssertThrows :call vader#assert#throws(<q-args>)
+  command! -nargs=+ Log            :call vader#log(<args>)
+  command! -nargs=+ Save           :call vader#save(<q-args>)
+  command! -nargs=* Restore        :call vader#restore(<q-args>)
+  command! -nargs=+ Assert         :call vader#assert#true(<args>)
+  command! -nargs=+ AssertEqual    :call vader#assert#equal(<args>)
+  command! -nargs=+ AssertNotEqual :call vader#assert#not_equal(<args>)
+  command! -nargs=+ AssertThrows   :call vader#assert#throws(<q-args>)
 endfunction
 
 function! s:cleanup()
@@ -137,6 +143,7 @@ function! s:cleanup()
   delcommand Restore
   delcommand Assert
   delcommand AssertEqual
+  delcommand AssertNotEqual
   delcommand AssertThrows
 endfunction
 
